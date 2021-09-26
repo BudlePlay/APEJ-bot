@@ -10,6 +10,7 @@ import random
 import asyncio
 import emoji
 from dateutil import tz
+import dataget
 
 
 rootname = "data/server"
@@ -29,7 +30,22 @@ async def on_ready():
         status=discord.Status.online,
         activity=discord.Game("메세지 관리"),
     )
+    bot.loop.create_task(job())
 
+
+async def job():
+    while True:
+
+        sendch=bot.get_channel(importdata["channel"])
+
+        sendmsg=dataget.get_chat_data()
+
+        sendmsg=dataget.CheckMessage(sendmsg)
+
+
+        await sendch.send(sendmsg)
+
+        await asyncio.sleep(5)
 
 testinfo = {}
 
@@ -56,57 +72,6 @@ async def on_member_join(member):
     await channel.send(f"{testinfo[str(channel.id)]['testcode']} 순서대로 채팅")
 
 
-async def CheckMessage(message):
-    blackwordfile = open("blackword.txt", "r", encoding="UTF-8")
-
-    blackwordlist = blackwordfile.read().split("\n")
-    blackwordfile.close()
-
-    if message.author.bot:
-        return
-
-    if (
-        ("?" in message.content or "？" in message.content)
-        and message.content[0] == message.content[-1]
-        and message.content[0] == "?"
-        and len(message.content) > 3
-    ):
-        await message.delete()
-        return
-
-    fullmsg = emoji.demojize(message.content, delimiters=("<:", ":00000>"))
-
-    print("fullmsg   " + fullmsg)
-
-    emojicount = len(re.findall(r"<:\w*:\d*>", fullmsg))
-    print(emojicount)
-    print(re.sub(r"<:\w*:\d*>", "", fullmsg))
-
-    if emojicount > 10:
-        await message.delete()
-        return
-    elif len(re.sub(r"<:\w*:\d*>", "", fullmsg)) > 200:
-        await message.delete()
-        return
-
-    needDelete = None
-
-    for black in blackwordlist:
-        if black in message.content:
-            message.content = message.content.replace(black, "##")
-            needDelete = True
-    if needDelete:
-        await message.delete()
-        await message.channel.send(
-            f"nick : {message.author.display_name}\n" + message.content
-        )
-
-
-@bot.event
-async def on_message_edit(before, after):
-
-    await CheckMessage(after)
-
 
 @bot.event
 async def on_message(tempmessage):
@@ -127,8 +92,7 @@ async def on_message(tempmessage):
                     await bot.get_channel(channelid).delete()
 
     else:
-        print("test")
-        await CheckMessage(tempmessage)
+        
 
         await bot.process_commands(tempmessage)
 
@@ -137,9 +101,10 @@ async def on_message(tempmessage):
 testcheck = input("test모드 > 'test'입력")
 
 token = ""
+importdata=json.load(tokenfile)
 if testcheck == "test":
-    token = json.load(tokenfile)["testtoken"]
+    token = importdata["testtoken"]
 else:
-    token = json.load(tokenfile)["token"]
+    token = importdata["token"]
 
 bot.run(token)
