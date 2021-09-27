@@ -2,26 +2,24 @@ import urllib.request as ul
 import json
 from urllib.parse import quote
 
+
 def get_chat_data():
+    url = f"http://127.0.0.1:8000/discord"
 
-    
+    request = ul.Request(url)
+    response = ul.urlopen(request)
+    rescode = response.getcode()
 
-    # url = f"http://127.0.0.1:8000/discord"
+    if rescode == 200:
+        responsedata = response.read()
 
-    # request = ul.Request(url)
-    # response = ul.urlopen(request)
-    # rescode = response.getcode()
+        my_json = responsedata.decode('utf8').replace("'", '"')
+        data = json.loads(my_json)
+        if data["flag"] == "success":
+            print(data)
+            return data["stub"]
 
-    # if (rescode == 200):
-    #     responsedata = response.read()
-        
-    #     print(responsedata)
-
-    #     if responsedata["flag"]=="success":
-    #         return responsedata["stub"]
-    sendmsg=open("testmsg.txt",encoding="UTF-8",mode="r").read()
-
-    return sendmsg
+    return "fail"
 
 
 def CheckMessage(message):
