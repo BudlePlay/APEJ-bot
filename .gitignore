@@ -3,3 +3,5 @@ token.json
 blackword.txt
 testmsg.txt
 /.idea
+__pycache__/dataget.cpython-39.pyc
+blackregex.txt
